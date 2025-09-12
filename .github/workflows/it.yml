@@ -1,0 +1,42 @@
+name: Run IT
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  kind-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Kind
+        uses: helm/kind-action@v1.10.0
+        with:
+          cluster_name: kind
+          version: v0.23.0   # Kind version (optional)
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+        with:
+          version: v1.30.0   # Match your k8s version
+
+      - name: Deploy manifests
+        run: |
+          kubectl apply -f k8s/
+          kubectl get pods -A
+
+      - name: Wait for pods to be ready
+        run: |
+          kubectl wait --for=condition=Ready pods --all --timeout=120s -A
+
+      - name: Run integration tests
+        run: |
+          # Replace with your test runner (e.g. pytest, mvn, gradle, etc.)
+          echo "Running tests..."
+          kubectl get nodes
+          kubectl get pods -A
