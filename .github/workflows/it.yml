@@ -32,7 +32,7 @@ jobs:
           path: core-bootstrap-repo
 
       - name: Run install target
-        run: make -f core-bootstrap-repo/Makefile install
+        run: make -f core-bootstrap-repo/cloud-core-local-dev/Makefile install
 
       - name: Wait for pods to be ready
         run: |
