@@ -29,7 +29,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: Netcracker/qubership-core-bootstrap
-          ref: feature/core-bootstrap
           path: core-bootstrap-repo
 
       - name: Run install target
