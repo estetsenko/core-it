@@ -31,10 +31,6 @@ jobs:
       - name: Run install target
         run: make -C core-bootstrap-repo/cloud-core-local-dev/ install
 
-      - name: Wait for pods to be ready
-        run: |
-          kubectl wait --for=condition=Ready pods --all --timeout=120s -A
-
       - name: Run integration tests
         run: |
           echo "Running tests..."
