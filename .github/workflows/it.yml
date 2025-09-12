@@ -18,12 +18,9 @@ jobs:
         uses: helm/kind-action@v1.10.0
         with:
           cluster_name: kind
-          version: v0.23.0   # Kind version (optional)
 
       - name: Set up kubectl
         uses: azure/setup-kubectl@v4
-        with:
-          version: v1.30.0   # Match your k8s version
 
       - name: Checkout Makefile repo
         uses: actions/checkout@v4
@@ -40,7 +37,6 @@ jobs:
 
       - name: Run integration tests
         run: |
-          # Replace with your test runner (e.g. pytest, mvn, gradle, etc.)
           echo "Running tests..."
           kubectl get nodes
           kubectl get pods -A
