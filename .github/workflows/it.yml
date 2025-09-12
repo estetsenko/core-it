@@ -25,10 +25,15 @@ jobs:
         with:
           version: v1.30.0   # Match your k8s version
 
-      - name: Deploy manifests
-        run: |
-          kubectl apply -f k8s/
-          kubectl get pods -A
+      - name: Checkout Makefile repo
+        uses: actions/checkout@v4
+        with:
+          repository: Netcracker/qubership-core-bootstrap
+          ref: feature/core-bootstrap
+          path: core-bootstrap-repo
+
+      - name: Run install target
+        run: make -f core-bootstrap-repo/Makefile install
 
       - name: Wait for pods to be ready
         run: |
