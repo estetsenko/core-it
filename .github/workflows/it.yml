@@ -36,3 +36,6 @@ jobs:
           echo "Running tests..."
           kubectl get nodes
           kubectl get pods -A
+
+      - name: Show memory usage
+        run: free -h
