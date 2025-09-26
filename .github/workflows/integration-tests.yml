@@ -58,7 +58,7 @@ jobs:
           today=$(date +%Y-%m-%d)
           mkdir -p report/pages/$today
           cp -r target/reports/* report/pages/$today/ || true
-          mv report/pages/$today/reports/surefire.html report/pages/$today/reports/index.html 
+          mv report/pages/$today/surefire.html report/pages/$today/index.html 
           cp report-template.html report/index.html
           
           successes=0
