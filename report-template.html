@@ -78,7 +78,7 @@
 
           row.appendChild(statusCell);
           row.appendChild(summaryCell);
-          table.appendChild(row);
+          table.insertBefore(row, table.rows[1]);
         });
 
         const ctx = document.getElementById('weeklyChart').getContext('2d');
