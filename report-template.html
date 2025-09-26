@@ -55,8 +55,8 @@
           if (entry) {
             let cls = '';
             let txt = '';
-            if (entry.status === 'success') { cls = 'success'; txt = '✅ Success'; }
-            else if (entry.status === 'failure') { cls = 'failure'; txt = '❌ Failure'; }
+            if (entry.status === 'success') { cls = 'success'; txt = 'Success'; }
+            else if (entry.status === 'failure') { cls = 'failure'; txt = 'Failure'; }
             statusCell.className = cls;
 
             const link = document.createElement('a');
@@ -70,7 +70,7 @@
             passedData.push(entry.successes);
             failedData.push(entry.failures);
           } else {
-            statusCell.textContent = '⚪ No data';
+            statusCell.textContent = 'No data';
             summaryCell.textContent = '-';
             passedData.push(0);
             failedData.push(0);
