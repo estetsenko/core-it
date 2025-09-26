@@ -67,7 +67,7 @@ jobs:
 
           for f in report/reports/$today/TEST-*.xml; do
             echo "$f"
-            tests=$(xmllint --xpath "string(//testsuite/@tests)" "$f" 2>/dev/null || echo 0)
+            tests=$(xmllint --xpath "string(//testsuite/@tests)" "$f" 2>/dev/null)
             fails=$(xmllint --xpath "string(//testsuite/@failures)" "$f" 2>/dev/null || echo 0)
             errs=$(xmllint --xpath "string(//testsuite/@errors)" "$f" 2>/dev/null || echo 0)
 
