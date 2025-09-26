@@ -58,7 +58,8 @@ jobs:
           today=$(date +%Y-%m-%d)
           mkdir -p pages/$today
           cp -r target/surefire-reports/* pages/$today/ || true
-
+          cp report-template.html report/index.html
+          
           successes=0
           failures=0
 
@@ -99,9 +100,6 @@ jobs:
               jq "del(.\"$d\")" pages/history.json > pages/tmp.json && mv pages/tmp.json pages/history.json
             fi
           done
-
-      - name: Copy HTML template
-        run: cp report-template.html report/index.html
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
