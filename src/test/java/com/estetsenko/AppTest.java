@@ -15,4 +15,9 @@ class AppTest {
     void mul() {
         assertEquals(6, App.mul(2, 3), "2 * 3 should equal 6");
     }
+
+    @Test
+    void alwaysFail() {
+        assertFalse(true);
+    }
 }
