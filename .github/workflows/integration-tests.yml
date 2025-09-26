@@ -25,19 +25,20 @@ jobs:
           java-version: 21
           cache: maven
 
-      - name: Checkout cloud core bootstrap repo
-        uses: actions/checkout@v4
-        with:
-          repository: Netcracker/qubership-core-bootstrap
-          path: core-bootstrap-repo
-
-      - name: Deploy cloud core
-        run: make -C core-bootstrap-repo/cloud-core-local-dev/ install
+#      - name: Checkout cloud core bootstrap repo
+#        uses: actions/checkout@v4
+#        with:
+#          repository: Netcracker/qubership-core-bootstrap
+#          path: core-bootstrap-repo
+#
+#      - name: Deploy cloud core
+#        run: make -C core-bootstrap-repo/cloud-core-local-dev/ install
 
       - name: Run integration tests
-        run: |
-          echo "Running tests..."
-          kubectl cluster-info --context kind-kind
-          kubectl get nodes
-          kubectl get pods -A
-          free -h
+        run: mvn clean test surefire-report:report
+
+      - name: Deploy HTML report to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./target/reports
