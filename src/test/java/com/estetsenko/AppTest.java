@@ -17,6 +17,11 @@ class AppTest {
     }
 
     @Test
+    void alwaysSuccess() {
+        assertTrue(true);
+    }
+
+    @Test
     void alwaysFail() {
         fail();
     }
