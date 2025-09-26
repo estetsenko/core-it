@@ -55,44 +55,50 @@ jobs:
 
       - name: Update report history
         run: |
-          mkdir -p report
-          history_file="report/history.json"
-          [ -f "$history_file" ] || echo "{}" > "$history_file"
-          
-          today=$(date -u +"%Y-%m-%d")
-          day_dir="report/$today"
-          mkdir -p "$day_dir"
-          
-          # Copy Surefire HTML report to daily folder
-          cp -r target/reports/* "$day_dir/"
-          mv "$day_dir/surefire.html" "$day_dir/index.html"
-          
-          # Parse XML reports
+          today=$(date +%Y-%m-%d)
+          mkdir -p pages/$today
+          cp -r target/surefire-reports/* pages/$today/ || true
+
           successes=0
           failures=0
-          
+
+          shopt -s nullglob
           for f in target/surefire-reports/TEST-*.xml; do
-            # Extract attributes
             tests=$(xmllint --xpath "string(//testsuite/@tests)" "$f" 2>/dev/null || echo 0)
             fails=$(xmllint --xpath "string(//testsuite/@failures)" "$f" 2>/dev/null || echo 0)
             errs=$(xmllint --xpath "string(//testsuite/@errors)" "$f" 2>/dev/null || echo 0)
-          
-            # Default to 0 if empty
+
             tests=${tests:-0}
             fails=${fails:-0}
             errs=${errs:-0}
-          
+
             successes=$((successes + tests - fails - errs))
             failures=$((failures + fails + errs))
           done
-          
-          tmpfile=$(mktemp)
-          cp "$history_file" "$tmpfile"
-          jq --arg day "$today" --arg status "$status" \
-             --argjson successes "$successes" --argjson failures "$failures" \
-             --arg path "$today" '.[$day]={status:$status,successes:$successes,failures:$failures,path:$path}' \
-             "$tmpfile" > "$tmpfile.new"
-          mv "$tmpfile.new" "$history_file"
+
+          echo "Successes=$successes"
+          echo "Failures=$failures"
+          echo "SUCCESS_COUNT=$successes" >> $GITHUB_ENV
+          echo "FAILURE_COUNT=$failures" >> $GITHUB_ENV
+
+          # prepare or update history.json
+          if [ ! -f pages/history.json ]; then
+            echo '{}' > pages/history.json
+          fi
+
+          jq --arg date "$today" \
+             --argjson succ "$successes" \
+             --argjson fail "$failures" \
+             '.[$date] = {successes: $succ, failures: $fail, path: $date}' \
+             pages/history.json > pages/tmp.json && mv pages/tmp.json pages/history.json
+
+          # cleanup older than 7 days
+          for d in $(ls pages | grep -E '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'); do
+            if [ "$(date -d "$d" +%s)" -lt "$(date -d '7 days ago' +%s)" ]; then
+              rm -rf "pages/$d"
+              jq "del(.\"$d\")" pages/history.json > pages/tmp.json && mv pages/tmp.json pages/history.json
+            fi
+          done
 
       - name: Copy HTML template
         run: cp report-template.html report/index.html
