@@ -54,6 +54,8 @@ jobs:
 
       - name: Update report history
         run: |
+          apt update
+          apt install -y xmlstarlet
           mkdir -p report
           history_file="report/history.json"
           [ -f "$history_file" ] || echo "{}" > "$history_file"
@@ -71,16 +73,18 @@ jobs:
           failures=0
           
           for f in target/surefire-reports/TEST-*.xml; do
-          [ -f "$f" ] || continue
-          # Sum attributes from all <testsuite> nodes in this file
-          run=$(xmllint --xpath "sum(//testsuite/@tests)" "$f" 2>/dev/null || echo 0)
-          fail=$(xmllint --xpath "sum(//testsuite/@failures)" "$f" 2>/dev/null || echo 0)
-          error=$(xmllint --xpath "sum(//testsuite/@errors)" "$f" 2>/dev/null || echo 0)
+            [ -f "$f" ] || continue
           
-          # Accumulate totals
-          successes=$((successes + run - fail - error))
-          failures=$((failures + fail + error))
+            total=$(xmlstarlet sel -t -v "sum(//testsuite/@tests)" "$f" 2>/dev/null || echo 0)
+            fail=$(xmlstarlet sel -t -v "sum(//testsuite/@failures)" "$f" 2>/dev/null || echo 0)
+            error=$(xmlstarlet sel -t -v "sum(//testsuite/@errors)" "$f" 2>/dev/null || echo 0)
+          
+            successes=$((successes + total - fail - error))
+            failures=$((failures + fail + error))
           done
+          
+          echo "Successes=$successes, Failures=$failures"
+
           
           status="success"
           [ "$failures" -gt 0 ] && status="failure"
