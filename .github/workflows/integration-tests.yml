@@ -92,7 +92,7 @@ jobs:
           jq --arg date "$today" \
              --argjson succ "$successes" \
              --argjson fail "$failures" \
-             '.[$date] = {successes: $succ, failures: $fail, path: $date}' \
+             '.[$date] = {successes: $succ, failures: $fail, path: reports/$date/pages}' \
              report/history.json > report/tmp.json && mv report/tmp.json report/history.json
 
           # cleanup older than 7 days
