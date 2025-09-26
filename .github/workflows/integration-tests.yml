@@ -55,8 +55,6 @@ jobs:
 
       - name: Update report history
         run: |
-          sudo apt-get update
-          sudo apt-get install -y xmlstarlet
           mkdir -p report
           history_file="report/history.json"
           [ -f "$history_file" ] || echo "{}" > "$history_file"
@@ -74,15 +72,19 @@ jobs:
           failures=0
           
           for f in target/surefire-reports/TEST-*.xml; do
-            [ -f "$f" ] || continue
-          
-            total=$(xmlstarlet sel -t -v "sum(//testsuite/@tests)" "$f" 2>/dev/null || echo 0)
-            fail=$(xmlstarlet sel -t -v "sum(//testsuite/@failures)" "$f" 2>/dev/null || echo 0)
-            error=$(xmlstarlet sel -t -v "sum(//testsuite/@errors)" "$f" 2>/dev/null || echo 0)
-          
-            successes=$((successes + total - fail - error))
+          [ -f "$f" ] || continue
+        
+          # Get all <testsuite> attributes and sum in bash
+          while IFS= read -r line; do
+            run=$(echo "$line" | sed -n 's/.*tests="\([0-9]*\)".*/\1/p')
+            fail=$(echo "$line" | sed -n 's/.*failures="\([0-9]*\)".*/\1/p')
+            error=$(echo "$line" | sed -n 's/.*errors="\([0-9]*\)".*/\1/p')
+            successes=$((successes + run - fail - error))
             failures=$((failures + fail + error))
+          done < <(xmllint --xpath '//testsuite' "$f" 2>/dev/null)
           done
+          
+          echo "Successes=$successes, Failures=$failures"
           
           echo "Successes=$successes, Failures=$failures"
 
