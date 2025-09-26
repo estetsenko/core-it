@@ -65,15 +65,16 @@ jobs:
           mkdir -p "$day_dir"
           cp -r target/surefire-reports/* "$day_dir/"
           
-          failures=$(grep -c "FAILURE" target/surefire-reports/*.txt || echo 0)
-          successes=$(grep -c "SUCCESS" target/surefire-reports/*.txt || echo 0)
+          successes=$(grep -c "SUCCESS" target/surefire-reports/*.txt 2>/dev/null || echo 0)
+          failures=$(grep -c "FAILURE" target/surefire-reports/*.txt 2>/dev/null || echo 0)
+          
           status="success"
           [ "$failures" -gt 0 ] && status="failure"
           
           tmpfile=$(mktemp)
           cp "$history_file" "$tmpfile"
           jq --arg day "$today" --arg status "$status" \
-          --argjson successes "$successes" --argjson failures "$failures" \
+          --argjson successes "$((successes))" --argjson failures "$((failures))" \
           --arg path "$today" '.[$day]={status:$status,successes:$successes,failures:$failures,path:$path}' \
           "$tmpfile" > "$tmpfile.new"
           mv "$tmpfile.new" "$history_file"
