@@ -72,39 +72,18 @@ jobs:
           failures=0
           
           for f in target/surefire-reports/TEST-*.xml; do
-            [ -f "$f" ] || continue
-            
-            # Grab all numeric values of attributes tests / failures / errors in this file.
-            # We query both testsuite and testsuites attributes to be safe.
-            tests_attrs=$(xmllint --xpath '//testsuite/@tests | //testsuites/@tests' "$f" 2>/dev/null || echo "")
-            fails_attrs=$(xmllint --xpath '//testsuite/@failures | //testsuites/@failures' "$f" 2>/dev/null || echo "")
-            errs_attrs=$(xmllint --xpath '//testsuite/@errors | //testsuites/@errors' "$f" 2>/dev/null || echo "")
-            
-            # Sum numbers found in each attribute string (e.g. tests="1" tests="2" ...)
-            t_sum=0
-            for n in $(echo "$tests_attrs" | grep -oE '[0-9]+' || true); do
-              t_sum=$((t_sum + n))
-            done
-            
-            f_sum=0
-            for n in $(echo "$fails_attrs" | grep -oE '[0-9]+' || true); do
-              f_sum=$((f_sum + n))
-            done
-            
-            e_sum=0
-            for n in $(echo "$errs_attrs" | grep -oE '[0-9]+' || true); do
-              e_sum=$((e_sum + n))
-            done
-            
-            # Defensive: ensure non-negative
-            if [ "$t_sum" -lt 0 ]; then t_sum=0; fi
-            if [ "$f_sum" -lt 0 ]; then f_sum=0; fi
-            if [ "$e_sum" -lt 0 ]; then e_sum=0; fi
-            
-            successes=$((successes + t_sum - f_sum - e_sum))
-            failures=$((failures + f_sum + e_sum))
-            
-            echo "DEBUG: $f -> tests=$t_sum failures=$f_sum errors=$e_sum"
+            # Extract attributes
+            tests=$(xmllint --xpath "string(//testsuite/@tests)" "$f" 2>/dev/null || echo 0)
+            fails=$(xmllint --xpath "string(//testsuite/@failures)" "$f" 2>/dev/null || echo 0)
+            errs=$(xmllint --xpath "string(//testsuite/@errors)" "$f" 2>/dev/null || echo 0)
+          
+            # Default to 0 if empty
+            tests=${tests:-0}
+            fails=${fails:-0}
+            errs=${errs:-0}
+          
+            successes=$((successes + tests - fails - errs))
+            failures=$((failures + fails + errs))
           done
           
           # Final safeguard: no negative successes
