@@ -56,16 +56,17 @@ jobs:
       - name: Update report history
         run: |
           today=$(date +%Y-%m-%d)
-          mkdir -p report/pages/$today
-          cp -r target/reports/* report/pages/$today/ || true
-          mv report/pages/$today/surefire.html report/pages/$today/index.html 
+          mkdir -p report/reports/$today/pages
+          cp -r target/surefire-reports/* report/reports/$today || true
+          cp -r target/reports/* report/reports/$today/pages || true
+          mv report/reports/$today/pages/surefire.html report/reports/$today/pages/index.html 
           cp report-template.html report/index.html
           
           successes=0
           failures=0
 
-          for f in target/surefire-reports/TEST-*.xml; do
-            tests=$(xmllint --xpath "string(//testsuite/@tests)" "$f" 2>/dev/null)
+          for f in report/reports/$today/TEST-*.xml; do
+            tests=$(xmllint --xpath "string(//testsuite/@tests)" "$f" 2>/dev/null || echo 0)
             fails=$(xmllint --xpath "string(//testsuite/@failures)" "$f" 2>/dev/null || echo 0)
             errs=$(xmllint --xpath "string(//testsuite/@errors)" "$f" 2>/dev/null || echo 0)
 
@@ -90,9 +91,9 @@ jobs:
              report/history.json > report/tmp.json && mv report/tmp.json report/history.json
 
           # cleanup older than 7 days
-          for d in $(ls report/pages | grep -E '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'); do
+          for d in $(ls report/reports | grep -E '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'); do
             if [ "$(date -d "$d" +%s)" -lt "$(date -d '7 days ago' +%s)" ]; then
-              rm -rf "report/pages/$d"
+              rm -rf "report/reports/$d"
               jq "del(.\"$d\")" report/history.json > report/tmp.json && mv report/tmp.json report/history.json
             fi
           done
