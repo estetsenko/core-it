@@ -72,22 +72,46 @@ jobs:
           failures=0
           
           for f in target/surefire-reports/TEST-*.xml; do
-          [ -f "$f" ] || continue
-        
-          # Get all <testsuite> attributes and sum in bash
-          while IFS= read -r line; do
-            run=$(echo "$line" | sed -n 's/.*tests="\([0-9]*\)".*/\1/p')
-            fail=$(echo "$line" | sed -n 's/.*failures="\([0-9]*\)".*/\1/p')
-            error=$(echo "$line" | sed -n 's/.*errors="\([0-9]*\)".*/\1/p')
-            successes=$((successes + run - fail - error))
-            failures=$((failures + fail + error))
-          done < <(xmllint --xpath '//testsuite' "$f" 2>/dev/null)
+            [ -f "$f" ] || continue
+            
+            # Grab all numeric values of attributes tests / failures / errors in this file.
+            # We query both testsuite and testsuites attributes to be safe.
+            tests_attrs=$(xmllint --xpath '//testsuite/@tests | //testsuites/@tests' "$f" 2>/dev/null || echo "")
+            fails_attrs=$(xmllint --xpath '//testsuite/@failures | //testsuites/@failures' "$f" 2>/dev/null || echo "")
+            errs_attrs=$(xmllint --xpath '//testsuite/@errors | //testsuites/@errors' "$f" 2>/dev/null || echo "")
+            
+            # Sum numbers found in each attribute string (e.g. tests="1" tests="2" ...)
+            t_sum=0
+            for n in $(echo "$tests_attrs" | grep -oE '[0-9]+' || true); do
+              t_sum=$((t_sum + n))
+            done
+            
+            f_sum=0
+            for n in $(echo "$fails_attrs" | grep -oE '[0-9]+' || true); do
+              f_sum=$((f_sum + n))
+            done
+            
+            e_sum=0
+            for n in $(echo "$errs_attrs" | grep -oE '[0-9]+' || true); do
+              e_sum=$((e_sum + n))
+            done
+            
+            # Defensive: ensure non-negative
+            if [ "$t_sum" -lt 0 ]; then t_sum=0; fi
+            if [ "$f_sum" -lt 0 ]; then f_sum=0; fi
+            if [ "$e_sum" -lt 0 ]; then e_sum=0; fi
+            
+            successes=$((successes + t_sum - f_sum - e_sum))
+            failures=$((failures + f_sum + e_sum))
+            
+            echo "DEBUG: $f -> tests=$t_sum failures=$f_sum errors=$e_sum"
           done
           
-          echo "Successes=$successes, Failures=$failures"
+          # Final safeguard: no negative successes
+          if [ "$successes" -lt 0 ]; then successes=0; fi
+          fail
           
           echo "Successes=$successes, Failures=$failures"
-
           
           status="success"
           [ "$failures" -gt 0 ] && status="failure"
