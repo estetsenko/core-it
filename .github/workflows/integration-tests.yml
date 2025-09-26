@@ -63,7 +63,8 @@ jobs:
           mkdir -p "$day_dir"
           
           # Copy Surefire HTML report to daily folder
-          cp target/reports/surefire.html "$day_dir/index.html"
+          cp -r target/reports/* "$day_dir/"
+          mv "$day_dir/surefire.html" "$day_dir/index.html"
           
           # Parse XML reports
           successes=0
