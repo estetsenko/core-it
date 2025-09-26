@@ -64,15 +64,10 @@ jobs:
           successes=0
           failures=0
 
-          shopt -s nullglob
           for f in target/surefire-reports/TEST-*.xml; do
             tests=$(xmllint --xpath "string(//testsuite/@tests)" "$f" 2>/dev/null || echo 0)
             fails=$(xmllint --xpath "string(//testsuite/@failures)" "$f" 2>/dev/null || echo 0)
             errs=$(xmllint --xpath "string(//testsuite/@errors)" "$f" 2>/dev/null || echo 0)
-
-            tests=${tests:-0}
-            fails=${fails:-0}
-            errs=${errs:-0}
 
             successes=$((successes + tests - fails - errs))
             failures=$((failures + fails + errs))
