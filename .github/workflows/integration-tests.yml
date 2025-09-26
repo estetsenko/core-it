@@ -86,15 +86,6 @@ jobs:
             failures=$((failures + fails + errs))
           done
           
-          # Final safeguard: no negative successes
-          if [ "$successes" -lt 0 ]; then successes=0; fi
-          fail
-          
-          echo "Successes=$successes, Failures=$failures"
-          
-          status="success"
-          [ "$failures" -gt 0 ] && status="failure"
-          
           tmpfile=$(mktemp)
           cp "$history_file" "$tmpfile"
           jq --arg day "$today" --arg status "$status" \
