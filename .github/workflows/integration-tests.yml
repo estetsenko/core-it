@@ -54,8 +54,8 @@ jobs:
 
       - name: Update report history
         run: |
-          apt update
-          apt install -y xmlstarlet
+          sudo apt-get update
+          sudo apt-get install -y xmlstarlet
           mkdir -p report
           history_file="report/history.json"
           [ -f "$history_file" ] || echo "{}" > "$history_file"
