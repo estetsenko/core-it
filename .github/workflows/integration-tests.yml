@@ -65,12 +65,16 @@ jobs:
           successes=0
           failures=0
 
-          for f in report/reports/$today/TEST-*.xml; do
-            echo "$f"
-            tests=$(xmllint --xpath "string(//testsuite/@tests)" "$f" 2>/dev/null)
-            fails=$(xmllint --xpath "string(//testsuite/@failures)" "$f" 2>/dev/null || echo 0)
-            errs=$(xmllint --xpath "string(//testsuite/@errors)" "$f" 2>/dev/null || echo 0)
-
+          for f in target/surefire-reports/TEST-*.xml; do
+            line=$(grep -o '<testsuite[^>]*>' "$f" | head -n1)
+            tests=$(echo "$line" | sed -n 's/.*tests="\([0-9]\+\)".*/\1/p')
+            fails=$(echo "$line" | sed -n 's/.*failures="\([0-9]\+\)".*/\1/p')
+            errs=$(echo "$line" | sed -n 's/.*errors="\([0-9]\+\)".*/\1/p')
+          
+            tests=${tests:-0}
+            fails=${fails:-0}
+            errs=${errs:-0}
+          
             successes=$((successes + tests - fails - errs))
             failures=$((failures + fails + errs))
           done
