@@ -84,7 +84,7 @@ jobs:
           echo "FAILURE_COUNT=$failures" >> $GITHUB_ENV
 
           # prepare or update history.json
-          if [ ! -f report/pages/history.json ]; then
+          if [ ! -f report/history.json ]; then
             echo '{}' > report/pages/history.json
           fi
 
@@ -92,13 +92,13 @@ jobs:
              --argjson succ "$successes" \
              --argjson fail "$failures" \
              '.[$date] = {successes: $succ, failures: $fail, path: $date}' \
-             report/pages/history.json > report/pages/tmp.json && mv report/pages/tmp.json report/pages/history.json
+             report/history.json > report/pages/tmp.json && mv report/pages/tmp.json report/pages/history.json
 
           # cleanup older than 7 days
           for d in $(ls pages | grep -E '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'); do
             if [ "$(date -d "$d" +%s)" -lt "$(date -d '7 days ago' +%s)" ]; then
               rm -rf "report/pages/$d"
-              jq "del(.\"$d\")" report/pages/history.json > report/pages/tmp.json && mv report/pages/tmp.json report/pages/history.json
+              jq "del(.\"$d\")" report/history.json > report/pages/tmp.json && mv report/pages/tmp.json report/pages/history.json
             fi
           done
 
