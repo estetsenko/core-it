@@ -56,8 +56,8 @@
           if (entry) {
             let cls = '';
             let txt = '';
-            if (entry.status === 'success') { cls = 'success'; txt = 'Success'; }
-            else if (entry.status === 'failure') { cls = 'failure'; txt = 'Failure'; }
+            if (entry.failures || 0) > 0) { cls = 'failure'; txt = 'Failure'; }
+            else { cls = 'success'; txt = 'Success'; }
             statusCell.className = cls;
 
             const link = document.createElement('a');
