@@ -34,9 +34,9 @@
         const failedData = [];
 
         const days = [];
-        for (let i = 6; i >= 0; i--) {
+        for (let i = 0; i > 7; i++) {
           const d = new Date();
-          d.setUTCDate(d.getUTCDate() - i);
+          d.setUTCDate(d.getUTCDate() + i);
           days.push(d.toISOString().slice(0, 10));
         }
 

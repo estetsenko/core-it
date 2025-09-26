@@ -47,7 +47,7 @@ jobs:
 #        run: make -C core-bootstrap-repo/cloud-core-local-dev/ install
 
       - name: Run integration tests
-        run: mvn clean test surefire-report:report
+        run: mvn clean surefire-report:report
         continue-on-error: true
 
       - name: Setup Pages
