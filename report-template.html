@@ -56,7 +56,7 @@
           if (entry) {
             let cls = '';
             let txt = '';
-            if (entry.failures || 0) > 0) { cls = 'failure'; txt = 'Failure'; }
+            if ((entry.failures || 0) > 0) { cls = 'failure'; txt = 'Failure'; }
             else { cls = 'success'; txt = 'Success'; }
             statusCell.className = cls;
 
