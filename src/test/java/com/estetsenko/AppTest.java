@@ -18,6 +18,6 @@ class AppTest {
 
     @Test
     void alwaysFail() {
-        assertFalse(true);
+        fail();
     }
 }
