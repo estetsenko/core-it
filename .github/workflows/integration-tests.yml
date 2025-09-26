@@ -61,7 +61,9 @@ jobs:
           today=$(date -u +"%Y-%m-%d")
           day_dir="report/$today"
           mkdir -p "$day_dir"
-          cp -r target/surefire-reports/* "$day_dir/"
+          
+          # Copy Surefire HTML report to daily folder
+          cp target/site/surefire-report.html "$day_dir/index.html"
           
           # Parse XML reports
           successes=0
