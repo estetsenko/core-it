@@ -69,13 +69,17 @@ jobs:
           # Parse XML reports
           successes=0
           failures=0
+          
           for f in target/surefire-reports/TEST-*.xml; do
-            [ -f "$f" ] || continue
-            run=$(xmllint --xpath "number(//testsuite/@tests)" "$f" 2>/dev/null || echo 0)
-            fail=$(xmllint --xpath "number(//testsuite/@failures)" "$f" 2>/dev/null || echo 0)
-            error=$(xmllint --xpath "number(//testsuite/@errors)" "$f" 2>/dev/null || echo 0)
-            successes=$((successes + run - fail - error))
-            failures=$((failures + fail + error))
+          [ -f "$f" ] || continue
+          # Sum attributes from all <testsuite> nodes in this file
+          run=$(xmllint --xpath "sum(//testsuite/@tests)" "$f" 2>/dev/null || echo 0)
+          fail=$(xmllint --xpath "sum(//testsuite/@failures)" "$f" 2>/dev/null || echo 0)
+          error=$(xmllint --xpath "sum(//testsuite/@errors)" "$f" 2>/dev/null || echo 0)
+          
+          # Accumulate totals
+          successes=$((successes + run - fail - error))
+          failures=$((failures + fail + error))
           done
           
           status="success"
