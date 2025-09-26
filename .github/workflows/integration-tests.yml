@@ -56,17 +56,24 @@ jobs:
         run: |
           mkdir -p report
           history_file="report/history.json"
-          if [ ! -f "$history_file" ]; then
-          echo "{}" > "$history_file"
-          fi
+          [ -f "$history_file" ] || echo "{}" > "$history_file"
           
           today=$(date -u +"%Y-%m-%d")
           day_dir="report/$today"
           mkdir -p "$day_dir"
           cp -r target/surefire-reports/* "$day_dir/"
           
-          successes=$(grep -c "SUCCESS" target/surefire-reports/*.txt 2>/dev/null || echo 0)
-          failures=$(grep -c "FAILURE" target/surefire-reports/*.txt 2>/dev/null || echo 0)
+          # Parse XML reports
+          successes=0
+          failures=0
+          for f in target/surefire-reports/TEST-*.xml; do
+            [ -f "$f" ] || continue
+            run=$(xmllint --xpath "number(//testsuite/@tests)" "$f" 2>/dev/null || echo 0)
+            fail=$(xmllint --xpath "number(//testsuite/@failures)" "$f" 2>/dev/null || echo 0)
+            error=$(xmllint --xpath "number(//testsuite/@errors)" "$f" 2>/dev/null || echo 0)
+            successes=$((successes + run - fail - error))
+            failures=$((failures + fail + error))
+          done
           
           status="success"
           [ "$failures" -gt 0 ] && status="failure"
@@ -74,9 +81,9 @@ jobs:
           tmpfile=$(mktemp)
           cp "$history_file" "$tmpfile"
           jq --arg day "$today" --arg status "$status" \
-          --argjson successes "$((successes))" --argjson failures "$((failures))" \
-          --arg path "$today" '.[$day]={status:$status,successes:$successes,failures:$failures,path:$path}' \
-          "$tmpfile" > "$tmpfile.new"
+             --argjson successes "$successes" --argjson failures "$failures" \
+             --arg path "$today" '.[$day]={status:$status,successes:$successes,failures:$failures,path:$path}' \
+             "$tmpfile" > "$tmpfile.new"
           mv "$tmpfile.new" "$history_file"
 
       - name: Copy HTML template
