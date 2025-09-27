@@ -97,8 +97,13 @@ jobs:
           echo "FAILURE_COUNT=$failures" >> $GITHUB_ENV
 
           # prepare or update history.json
-          if [ ! -f report/history.json ]; then
-            echo '{}' > report/history.json
+          url="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/report/history.json"
+          echo "Fetching $url"
+          if curl -s -f -o report/history.json "$url"; then
+            echo "Loaded existing history.json"
+          else
+            echo "{}" > report/history.json
+            echo "No history.json found, creating new"
           fi
 
           jq --arg date "$today" \
