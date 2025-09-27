@@ -59,9 +59,14 @@ jobs:
           path: report/history.json
           key: report-history
 
-      - name: Update report history
+      - name: Delete report-history cache
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh cache delete "report-history"
+
+      - name: Update report history
+        run: |
           today=$(date +%Y-%m-%d)
           mkdir -p report/reports/$today/pages
           cp -r target/surefire-reports/* report/reports/$today || true
