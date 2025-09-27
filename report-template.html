@@ -60,11 +60,15 @@
             else { cls = 'success'; txt = 'Success'; }
             statusCell.className = cls;
 
-            const link = document.createElement('a');
-            link.href = entry.path + '/index.html';
-            link.target = '_blank';
-            link.textContent = txt;
-            statusCell.appendChild(link);
+            if (day === today) {
+              const link = document.createElement('a');
+              link.href = entry.path + '/index.html';
+              link.target = '_blank';
+              link.textContent = txt;
+              statusCell.appendChild(link);
+            } else {
+              statusCell.textContent = txt;
+            }
 
             summaryCell.textContent = `${entry.successes} passed / ${entry.failures} failed`;
 
