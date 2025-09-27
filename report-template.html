@@ -41,6 +41,7 @@
           days.push(d.toISOString().slice(0, 10));
         }
 
+        const today = new Date().toISOString().slice(0, 10);
         days.forEach(day => {
           labels.push(day);
           const entry = data[day];
