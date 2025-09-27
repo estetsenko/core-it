@@ -59,12 +59,6 @@ jobs:
           path: report/history.json
           key: report-history
 
-      - name: Delete report-history cache
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh cache delete "report-history"
-
       - name: Update report history
         run: |
           today=$(date +%Y-%m-%d)
@@ -120,12 +114,6 @@ jobs:
               jq "del(.\"$d\")" report/history.json > report/tmp.json && mv report/tmp.json report/history.json
             fi
           done
-
-      - name: Save history cache
-        uses: actions/cache/save@v4
-        with:
-          path: report/history.json
-          key: report-history
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
