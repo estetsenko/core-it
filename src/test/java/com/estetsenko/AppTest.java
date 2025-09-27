@@ -23,7 +23,6 @@ class AppTest {
     }
 
     @Test
-    @Disabled
     void alwaysFail() {
         fail();
     }
