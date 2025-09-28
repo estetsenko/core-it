@@ -53,12 +53,6 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
-      - name: Restore history cache
-        uses: actions/cache@v4
-        with:
-          path: report/history.json
-          key: report-history
-
       - name: Update report history
         run: |
           today=$(date +%Y-%m-%d)
@@ -91,7 +85,7 @@ jobs:
           echo "FAILURE_COUNT=$failures" >> $GITHUB_ENV
 
           # prepare or update history.json
-          url="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/report/history.json"
+          url="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/history.json"
           echo "Fetching $url"
           if curl -s -f -o report/history.json "$url"; then
             echo "Loaded existing history.json"
