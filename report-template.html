@@ -6,7 +6,6 @@
           href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>"/>
     <title>Daily Integration Tests Report</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -117,7 +116,8 @@
               d.setUTCDate(d.getUTCDate() - i);
               dates.push(d.toISOString().slice(0, 10));
             }
-            dates.reverse();
+
+            dates.reverse(); // newest first
             const today = new Date().toISOString().slice(0, 10);
 
             projectList.forEach(p => {
@@ -126,37 +126,39 @@
               barLinks[p] = { passed: [], failed: [] };
             });
 
-            // Table header with ⚠️
+            // Table header with ⚠️ if any project failed
             const header = document.createElement('tr');
             const headerHtml = ['<th>Project</th>'];
             dates.forEach(day => {
-              let dayFailed = false;
-              projectList.forEach(project => {
-                const entry = data[day] && data[day][project];
-                if(entry && entry.failures>0) dayFailed=true;
-              });
-              const warning = dayFailed ? ' ⚠️' : '';
-              headerHtml.push(`<th>${day}${warning}</th>`);
+                let dayFailed = false;
+                projectList.forEach(project => {
+                    const entry = data[day] && data[day][project];
+                    if (entry && entry.failures > 0) dayFailed = true;
+                });
+                const warning = dayFailed ? ' ⚠️' : '';
+                headerHtml.push(`<th>${day}${warning}</th>`);
             });
             header.innerHTML = headerHtml.join('');
             table.appendChild(header);
 
-            // Table rows
             projectList.forEach(project => {
               const row = document.createElement('tr');
               row.innerHTML = `<td>${project}</td>`;
+
               dates.forEach(day => {
                 const cell = document.createElement('td');
                 const entry = data[day] && data[day][project];
-                if(entry){
+
+                if (entry) {
                   const successes = entry.successes;
                   const failures = entry.failures;
-                  const cls = failures>0 ? 'failure-cell':'success-cell';
+                  const cls = failures > 0 ? 'failure-cell' : 'success-cell';
                   const text = `✔️ ${successes} / ⚠️ ${failures}`;
-                  if(day===today){
+
+                  if (day === today) {
                     const link = document.createElement('a');
-                    link.href = entry.path+'index.html';
-                    link.target='_blank';
+                    link.href = entry.path + 'index.html';
+                    link.target = '_blank';
                     const span = document.createElement('span');
                     span.className = cls;
                     span.textContent = text;
@@ -168,76 +170,73 @@
                     span.textContent = text;
                     cell.appendChild(span);
                   }
+
                   passedData[project].push(successes);
                   failedData[project].push(failures);
-                  barLinks[project].passed.push(entry.path+'index.html');
-                  barLinks[project].failed.push(entry.path+'index.html');
+                  barLinks[project].passed.push(entry.path + 'index.html');
+                  barLinks[project].failed.push(entry.path + 'index.html');
                 } else {
-                  cell.textContent='-';
+                  cell.textContent = '-';
                   passedData[project].push(0);
                   failedData[project].push(0);
                   barLinks[project].passed.push(null);
                   barLinks[project].failed.push(null);
                 }
+
                 row.appendChild(cell);
               });
+
               table.appendChild(row);
             });
 
             // Chart datasets
-            const datasets=[];
-            projectList.forEach(project=>{
+            const datasets = [];
+            projectList.forEach(project => {
               datasets.push({
-                label: project+' Passed',
+                label: project + ' Passed',
                 data: passedData[project],
-                backgroundColor:'#16a34a',
-                stack:project,
-                custom:{links:barLinks[project].passed}
+                backgroundColor: '#16a34a',
+                stack: project,
+                custom: { links: barLinks[project].passed }
               });
               datasets.push({
-                label: project+' Failed',
+                label: project + ' Failed',
                 data: failedData[project],
-                backgroundColor:'#dc2626',
-                stack:project,
-                custom:{links:barLinks[project].failed}
+                backgroundColor: '#dc2626',
+                stack: project,
+                custom: { links: barLinks[project].failed }
               });
             });
 
-            const ctx=document.getElementById('weeklyChart').getContext('2d');
-            const weeklyChart=new Chart(ctx,{
-              type:'bar',
-              data:{labels:dates,datasets:datasets},
-              options:{
-                responsive:true,
-                plugins:{
-                  legend:{display:false},
-                  title:{display:true,text:'Tests Passed vs Failed (Last 7 Days, per project)',font:{size:18,weight:'600'}},
-                  datalabels:{
-                    color:'#000',
-                    anchor:'end',
-                    align:'start',
-                    font:{weight:'bold'},
-                    formatter:function(value){ return Math.round(value); } // integer counts
+            const ctx = document.getElementById('weeklyChart').getContext('2d');
+            const weeklyChart = new Chart(ctx, {
+              type: 'bar',
+              data: { labels: dates, datasets: datasets },
+              options: {
+                responsive: true,
+                plugins: {
+                  legend: { display: false },
+                  title: { display: true, text: 'Tests Passed vs Failed (Last 7 Days, per project)', font: { size: 18, weight: '600' } }
+                },
+                scales: { y: { beginAtZero: true, precision: 0, ticks: {precision: 0} } },
+                onClick: (evt, elements) => {
+                  if (!elements.length) return;
+                  const element = elements[0];
+                  const datasetIndex = element.datasetIndex;
+                  const dataIndex = element.index;
+                  const link = weeklyChart.data.datasets[datasetIndex].custom.links[dataIndex];
+                  if (link) window.open(link, '_blank');
+                },
+                hover: {
+                  onHover: (evt, elements) => {
+                    evt.native.target.style.cursor = elements[0] ? 'pointer' : 'default';
                   }
-                },
-                scales:{y:{beginAtZero:true,precision:0}},
-                onClick:(evt,elements)=>{
-                  if(!elements.length) return;
-                  const element=elements[0];
-                  const datasetIndex=element.datasetIndex;
-                  const dataIndex=element.index;
-                  const link=weeklyChart.data.datasets[datasetIndex].custom.links[dataIndex];
-                  if(link) window.open(link,'_blank');
-                },
-                hover:{
-                  onHover:(evt,elements)=>{evt.native.target.style.cursor=elements[0]?'pointer':'default';}
                 }
-              },
-              plugins:[ChartDataLabels]
+              }
             });
 
           })
-          .catch(err=>console.error('Failed to load history.json',err));
+          .catch(err => console.error('Failed to load history.json', err));
     });
 </script>
 </body>
