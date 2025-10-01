@@ -103,7 +103,6 @@ jobs:
             if ! curl -s -f -o report/history.json "$url"; then
               echo "{}" > report/history.json
             fi
-              echo "{}" > report/history.json
           
             jq --arg date "$today" \
                --arg proj "$modname" \

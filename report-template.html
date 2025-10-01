@@ -94,6 +94,8 @@
           failedData[p] = [];
         });
 
+        days.reverse();
+
         days.forEach(day => {
         const row = document.createElement('tr');
         row.innerHTML = `<td>${day}</td>`;
