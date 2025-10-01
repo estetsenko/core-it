@@ -81,7 +81,6 @@ jobs:
                   echo "{}" > report/history.json
                 fi
               fi
-              echo "{}" > report/history.json
           
               jq --arg date "$today" \
                  --arg proj "$name" \
