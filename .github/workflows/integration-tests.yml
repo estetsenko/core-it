@@ -35,7 +35,7 @@ jobs:
       - name: Run integration tests for all modules
         run: mvn -B clean surefire-report:report || true
 
-      - name: Aggregate Surefire reports (any depth)
+      - name: Aggregate Surefire reports
         run: |
           # Find every module that has surefire-reports or reports inside target/
           for module in $(find . -type d -path "*/target/surefire-reports" -o -path "*/target/reports" | sed -E 's#/target/(surefire-reports|reports)##' | sort -u); do
