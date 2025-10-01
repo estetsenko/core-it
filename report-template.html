@@ -101,45 +101,42 @@
           .then(res => res.json())
           .then(data => {
             const table = document.getElementById('reportTable');
-            const labels = [];
+            const dates = [];
             const passedData = {};
             const failedData = {};
-            const barLinks = {}; // store links for chart bars
+            const barLinks = {};
 
+            // Collect all projects
             const projects = new Set();
-            Object.values(data).forEach(dayEntry => {
-              Object.keys(dayEntry).forEach(p => projects.add(p));
-            });
+            Object.values(data).forEach(dayEntry => Object.keys(dayEntry).forEach(p => projects.add(p)));
             const projectList = [...projects].sort();
 
-            // Build table header
-            const header = document.createElement('tr');
-            header.innerHTML = '<th>Date</th>' + projectList.map(p => `<th>${p}</th>`).join('');
-            table.appendChild(header);
-
-            const days = [];
+            // Prepare last 7 days
             for (let i = 6; i >= 0; i--) {
               const d = new Date();
               d.setUTCDate(d.getUTCDate() - i);
-              days.push(d.toISOString().slice(0, 10));
+              dates.push(d.toISOString().slice(0, 10));
             }
-
             const today = new Date().toISOString().slice(0, 10);
 
+            // Init data structures
             projectList.forEach(p => {
               passedData[p] = [];
               failedData[p] = [];
               barLinks[p] = { passed: [], failed: [] };
             });
 
-            days.reverse();
+            // Build table header (dates as columns)
+            const header = document.createElement('tr');
+            header.innerHTML = '<th>Project</th>' + dates.map(d => `<th>${d}</th>`).join('');
+            table.appendChild(header);
 
-            days.forEach(day => {
+            // Build rows per project
+            projectList.forEach(project => {
               const row = document.createElement('tr');
-              row.innerHTML = `<td>${day}</td>`;
-              labels.push(day);
+              row.innerHTML = `<td>${project}</td>`;
 
-              projectList.forEach(project => {
+              dates.forEach(day => {
                 const cell = document.createElement('td');
                 const entry = data[day] && data[day][project];
 
@@ -165,7 +162,6 @@
                   failedData[project].push(entry.failures);
                   barLinks[project].passed.push(entry.path + 'index.html');
                   barLinks[project].failed.push(entry.path + 'index.html');
-
                 } else {
                   cell.textContent = '-';
                   passedData[project].push(0);
@@ -180,7 +176,7 @@
               table.appendChild(row);
             });
 
-            // Build chart datasets
+            // Build chart datasets (projects as stacked groups)
             const datasets = [];
             projectList.forEach(project => {
               datasets.push({
@@ -202,7 +198,7 @@
             const ctx = document.getElementById('weeklyChart').getContext('2d');
             const weeklyChart = new Chart(ctx, {
               type: 'bar',
-              data: { labels: labels, datasets: datasets },
+              data: { labels: dates, datasets: datasets },
               options: {
                 responsive: true,
                 plugins: {
