@@ -38,11 +38,10 @@
         }
 
         th {
-            background: #4f46e5;
-            color: white;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 0.05em;
+            color: white;
         }
 
         tr:nth-child(even) td {
@@ -126,9 +125,21 @@
               barLinks[p] = { passed: [], failed: [] };
             });
 
-            // Table header
+            // Table header with red/green per date
             const header = document.createElement('tr');
-            header.innerHTML = '<th>Project</th>' + dates.map(d => `<th>${d}</th>`).join('');
+            const headerHtml = ['<th>Project</th>'];
+
+            dates.forEach(day => {
+              let dayFailed = false;
+              projectList.forEach(project => {
+                const entry = data[day] && data[day][project];
+                if (entry && entry.failures > 0) dayFailed = true;
+              });
+              const cls = dayFailed ? 'failure-cell' : 'success-cell';
+              headerHtml.push(`<th class="${cls}">${day}</th>`);
+            });
+
+            header.innerHTML = headerHtml.join('');
             table.appendChild(header);
 
             projectList.forEach(project => {
