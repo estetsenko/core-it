@@ -6,9 +6,7 @@ on:
     branches: [ main ]
 
 permissions:
-  contents: read
   pages: write
-  id-token: write
 
 concurrency:
   group: "integration-tests"
