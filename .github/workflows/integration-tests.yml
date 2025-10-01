@@ -73,6 +73,12 @@ jobs:
           successes=0
           failures=0
           
+          url="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/history.json"
+          if ! curl -s -f -o report/history.json "$url"; then
+            echo "No history.json found, create a new one"
+            echo "{}" > report/history.json
+          fi
+          
           for artifact in artifacts/*; do
             modname=$(basename "$artifact")
             echo "Processing artifact for $modname"
@@ -97,12 +103,6 @@ jobs:
               mkdir -p report/reports/$modname
               cp -r "$artifact/reports/"* report/reports/$modname/
               mv "report/reports/$modname/surefire.html" "report/reports/$modname/index.html" 
-            fi
-          
-            url="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/history.json"
-            if ! curl -s -f -o report/history.json "$url"; then
-              echo "No history.json found, create a new one"
-              echo "{}" > report/history.json
             fi
           
             jq --arg date "$today" \
