@@ -126,9 +126,19 @@
               barLinks[p] = { passed: [], failed: [] };
             });
 
-            // Table header
+            // Table header with ⚠️ if any project failed
             const header = document.createElement('tr');
-            header.innerHTML = '<th>Project</th>' + dates.map(d => `<th>${d}</th>`).join('');
+            const headerHtml = ['<th>Project</th>'];
+            dates.forEach(day => {
+                let dayFailed = false;
+                projectList.forEach(project => {
+                    const entry = data[day] && data[day][project];
+                    if (entry && entry.failures > 0) dayFailed = true;
+                });
+                const warning = dayFailed ? ' ⚠️' : '';
+                headerHtml.push(`<th>${day}${warning}</th>`);
+            });
+            header.innerHTML = headerHtml.join('');
             table.appendChild(header);
 
             projectList.forEach(project => {
@@ -143,7 +153,7 @@
                   const successes = entry.successes;
                   const failures = entry.failures;
                   const cls = failures > 0 ? 'failure-cell' : 'success-cell';
-                  const text = `✔️ ${successes} / ⚠️️ ${failures}`;
+                  const text = `✔️ ${successes} / ⚠️ ${failures}`;
 
                   if (day === today) {
                     const link = document.createElement('a');
