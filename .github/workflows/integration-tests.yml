@@ -35,15 +35,20 @@ jobs:
       - name: Run integration tests for all modules
         run: mvn -B clean surefire-report:report || true
 
-      - name: Upload Surefire reports
+      - name: Upload Surefire reports per module
         run: |
           for module in $(find . -maxdepth 1 -type d ! -name . ! -name report); do
             if [ -d "$module/target/surefire-reports" ] || [ -d "$module/target/reports" ]; then
               modname=$(basename "$module")
-              echo "Uploading reports for $modname"
-              tar -czf "$modname-reports.tgz" \
-                "$module/target/surefire-reports" \
-                "$module/target/reports" 2>/dev/null || true
-              gh run upload-artifact --name "surefire-reports-$modname" "$modname-reports.tgz"
+              echo "Found test reports for $modname"
+              mkdir -p artifacts/$modname
+              cp -r $module/target/surefire-reports artifacts/$modname/ 2>/dev/null || true
+              cp -r $module/target/reports artifacts/$modname/ 2>/dev/null || true
             fi
           done
+
+      - name: Upload all module artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: artifacts/*
