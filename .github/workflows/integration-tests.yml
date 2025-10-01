@@ -69,7 +69,7 @@ jobs:
           name: surefire-reports
           path: artifacts
 
-      - name: Update report history from artifacts
+      - name: Update report
         run: |
           today=$(date +%Y-%m-%d)
           mkdir -p report/reports/$today
@@ -101,8 +101,11 @@ jobs:
               cp "$artifact/reports/surefire.html" report/reports/$today/$modname/index.html
             fi
           
-            if [ ! -f report/history.json ]; then
+            url="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/history.json"
+            if curl -s -f -o report/history.json "$url"; then
+            else
               echo "{}" > report/history.json
+              echo "No history.json found, creating new"
             fi
           
             jq --arg date "$today" \
