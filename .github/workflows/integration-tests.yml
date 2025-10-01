@@ -98,14 +98,11 @@ jobs:
               cp "$artifact/reports/surefire.html" report/reports/$today/$modname/index.html
               cp -r "$artifact/reports/*" report/reports/$today/$modname/
             fi
-            
-            url="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/history.json"
-            if curl -s -f -o report/history.json "$url"; then
-            else
-              echo "{}" > report/history.json
-              echo "No history.json found, creating new"
-            fi
           
+            url="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/history.json"
+            if ! curl -s -f -o report/history.json "$url"; then
+              echo "{}" > report/history.json
+            fi
             jq --arg date "$today" \
                --arg proj "$modname" \
                --arg succ "$mod_succ" \
