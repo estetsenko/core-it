@@ -74,6 +74,7 @@ jobs:
 
               # Update JSON per project
               url="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/history.json"
+              echo "{}" > report/history.json
               if [ ! -f report/history.json ]; then
                 if curl -s -f -o report/history.json "$url"; then
                   echo "Loaded existing history.json"
