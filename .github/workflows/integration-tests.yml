@@ -37,13 +37,14 @@ jobs:
 
       - name: Aggregate Surefire reports
         run: |
-          # Find every module that has surefire-reports or reports inside target/
-          for module in $(find . -type d -path "*/target/surefire-reports" -o -path "*/target/reports" | sed -E 's#/target/(surefire-reports|reports)##' | sort -u); do
+          for module in $(find . -type d -path "*/target/surefire-reports" | sed -E 's#/target/surefire-reports##' | sort -u); do
             modname=$(basename "$module")
             echo "Found test reports for $modname ($module)"
             mkdir -p artifacts/$modname
-            cp -r $module/target/surefire-reports artifacts/$modname/ 2>/dev/null || true
-            cp -r $module/target/reports artifacts/$modname/ 2>/dev/null || true
+            cp -r "$module/target/surefire-reports" artifacts/$modname/ || true
+            if [ -d "$module/target/reports" ]; then
+              cp -r "$module/target/reports" artifacts/$modname/ || true
+            fi
           done
 
       - name: Upload all module artifacts
