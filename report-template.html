@@ -117,6 +117,10 @@
               d.setUTCDate(d.getUTCDate() - i);
               dates.push(d.toISOString().slice(0, 10));
             }
+
+            // Reverse the date order (newest first)
+            dates.reverse();
+
             const today = new Date().toISOString().slice(0, 10);
 
             // Init data structures
