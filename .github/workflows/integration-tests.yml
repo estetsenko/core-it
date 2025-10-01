@@ -42,8 +42,8 @@ jobs:
               modname=$(basename "$module")
               echo "Found test reports for $modname"
               mkdir -p artifacts/$modname
-              cp -r $module/target/surefire-reports artifacts/$modname/ 2>/dev/null || true
-              cp -r $module/target/reports artifacts/$modname/ 2>/dev/null || true
+              cp -r $module/target/surefire-reports artifacts/$modname/ 2>/dev/null
+              cp -r $module/target/reports artifacts/$modname/ 2>/dev/null
             fi
           done
 
