@@ -95,7 +95,8 @@ jobs:
           
             if [ -f "$artifact/reports/surefire.html" ]; then
               mkdir -p report/reports/$today/$modname
-              cp -r "$artifact/reports/*" report/reports/$today/$modname/
+              cp -r "$artifact/reports/"* report/reports/$today/$modname/
+              mv "report/reports/$today/$modname/surefire.html" "report/reports/$today/$modname/index.html" 
             fi
           
             url="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/history.json"
