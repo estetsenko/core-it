@@ -1,4 +1,4 @@
-package com.estetsenko;
+package com.estetsenko.second;
 
 public class App {
     public static void main(String[] args) {
