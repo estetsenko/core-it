@@ -54,22 +54,21 @@
             transition: background 0.3s;
         }
 
-        .success {
-            background: #16a34a;
-            color: white;
+        .success, .failure {
             padding: 4px 8px;
             border-radius: 6px;
             font-weight: 500;
             display: inline-block;
         }
 
+        .success {
+            background: #16a34a;
+            color: white;
+        }
+
         .failure {
             background: #dc2626;
             color: white;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-weight: 500;
-            display: inline-block;
         }
 
         a.success, a.failure {
@@ -106,36 +105,30 @@
             const failedData = {};
             const barLinks = {};
 
-            // Collect all projects
             const projects = new Set();
             Object.values(data).forEach(dayEntry => Object.keys(dayEntry).forEach(p => projects.add(p)));
             const projectList = [...projects].sort();
 
-            // Prepare last 7 days
             for (let i = 6; i >= 0; i--) {
               const d = new Date();
               d.setUTCDate(d.getUTCDate() - i);
               dates.push(d.toISOString().slice(0, 10));
             }
 
-            // Reverse the date order (newest first)
-            dates.reverse();
-
+            dates.reverse(); // newest first
             const today = new Date().toISOString().slice(0, 10);
 
-            // Init data structures
             projectList.forEach(p => {
               passedData[p] = [];
               failedData[p] = [];
               barLinks[p] = { passed: [], failed: [] };
             });
 
-            // Build table header (dates as columns)
+            // Table header
             const header = document.createElement('tr');
             header.innerHTML = '<th>Project</th>' + dates.map(d => `<th>${d}</th>`).join('');
             table.appendChild(header);
 
-            // Build rows per project
             projectList.forEach(project => {
               const row = document.createElement('tr');
               row.innerHTML = `<td>${project}</td>`;
@@ -145,25 +138,28 @@
                 const entry = data[day] && data[day][project];
 
                 if (entry) {
-                  const txt = entry.failures > 0 ? 'Failure' : 'Success';
-                  const cls = entry.failures > 0 ? 'failure' : 'success';
+                  const successes = entry.successes;
+                  const failures = entry.failures;
+                  const cls = failures > 0 ? 'failure' : 'success';
+
+                  const text = `✅ ${successes} / ❌ ${failures}`;
 
                   if (day === today) {
                     const link = document.createElement('a');
                     link.href = entry.path + 'index.html';
                     link.target = '_blank';
-                    link.textContent = txt;
+                    link.textContent = text;
                     link.className = cls;
                     cell.appendChild(link);
                   } else {
                     const span = document.createElement('span');
-                    span.textContent = txt;
+                    span.textContent = text;
                     span.className = cls;
                     cell.appendChild(span);
                   }
 
-                  passedData[project].push(entry.successes);
-                  failedData[project].push(entry.failures);
+                  passedData[project].push(successes);
+                  failedData[project].push(failures);
                   barLinks[project].passed.push(entry.path + 'index.html');
                   barLinks[project].failed.push(entry.path + 'index.html');
                 } else {
@@ -180,7 +176,7 @@
               table.appendChild(row);
             });
 
-            // Build chart datasets (projects as stacked groups)
+            // Chart datasets
             const datasets = [];
             projectList.forEach(project => {
               datasets.push({
