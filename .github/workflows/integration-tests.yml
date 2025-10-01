@@ -99,6 +99,8 @@ jobs:
               mv "report/reports/$modname/surefire.html" "report/reports/$modname/index.html" 
             fi
           
+              echo "{}" > report/history.json
+          
             url="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/history.json"
             if ! curl -s -f -o report/history.json "$url"; then
               echo "{}" > report/history.json
