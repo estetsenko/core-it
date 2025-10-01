@@ -69,7 +69,7 @@ jobs:
       - name: Update report
         run: |
           today=$(date +%Y-%m-%d)
-          mkdir -p report/reports/$today
+          mkdir -p report/reports
           successes=0
           failures=0
           
@@ -94,9 +94,9 @@ jobs:
             failures=$((failures + mod_fail))
           
             if [ -f "$artifact/reports/surefire.html" ]; then
-              mkdir -p report/reports/$today/$modname
-              cp -r "$artifact/reports/"* report/reports/$today/$modname/
-              mv "report/reports/$today/$modname/surefire.html" "report/reports/$today/$modname/index.html" 
+              mkdir -p report/reports/$modname
+              cp -r "$artifact/reports/"* report/reports/$modname/
+              mv "report/reports/$modname/surefire.html" "report/reports/$modname/index.html" 
             fi
           
             url="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/history.json"
@@ -107,7 +107,7 @@ jobs:
                --arg proj "$modname" \
                --arg succ "$mod_succ" \
                --arg fail "$mod_fail" \
-               --arg p "reports/$today/$modname/" \
+               --arg p "reports/$modname/" \
                '.[$date][$proj] = {successes: ($succ|tonumber), failures: ($fail|tonumber), path: $p}' \
                report/history.json > report/tmp.json && mv report/tmp.json report/history.json
           done
