@@ -52,8 +52,8 @@ jobs:
               name=$(basename "$module")
               mkdir -p report/reports/$today/$name
               cp -r $module/target/surefire-reports/* report/reports/$today/$name/ || true
-              if [ -f "$module/target/site/surefire-report.html" ]; then
-                cp "$module/target/site/surefire-report.html" report/reports/$today/$name/index.html
+              if [ -f "$module/target/site/surefire.html" ]; then
+                cp "$module/target/site/surefire.html" report/reports/$today/$name/index.html
               fi
 
               # Parse test results
