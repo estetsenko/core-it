@@ -54,25 +54,27 @@
             transition: background 0.3s;
         }
 
-        .pill {
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-weight: 500;
-            display: inline-block;
-            color: white;
-            font-size: 0.9rem;
-        }
-
-        .success {
+        .success-cell {
             background: #16a34a;
+            color: white;
+            font-weight: 500;
+            border-radius: 6px;
+            padding: 6px;
         }
 
-        .failure {
+        .failure-cell {
             background: #dc2626;
+            color: white;
+            font-weight: 500;
+            border-radius: 6px;
+            padding: 6px;
         }
 
-        a .pill {
-            color: white; /* Ensure pill text stays white inside links */
+        a .success-cell, a .failure-cell {
+            color: white;
+            text-decoration: none;
+            display: inline-block;
+            width: 100%;
         }
 
         canvas {
@@ -140,31 +142,23 @@
                 if (entry) {
                   const successes = entry.successes;
                   const failures = entry.failures;
-
-                  // Container for pills
-                  const container = document.createElement('div');
-                  container.style.display = 'flex';
-                  container.style.justifyContent = 'center';
-                  container.style.gap = '6px';
-
-                  const successSpan = document.createElement('span');
-                  successSpan.className = 'pill success';
-                  successSpan.textContent = `✅ ${successes}`;
-                  container.appendChild(successSpan);
-
-                  const failureSpan = document.createElement('span');
-                  failureSpan.className = 'pill failure';
-                  failureSpan.textContent = `❌ ${failures}`;
-                  container.appendChild(failureSpan);
+                  const cls = failures > 0 ? 'failure-cell' : 'success-cell';
+                  const text = `✅ ${successes} / ❌ ${failures}`;
 
                   if (day === today) {
                     const link = document.createElement('a');
                     link.href = entry.path + 'index.html';
                     link.target = '_blank';
-                    link.appendChild(container);
+                    const span = document.createElement('span');
+                    span.className = cls;
+                    span.textContent = text;
+                    link.appendChild(span);
                     cell.appendChild(link);
                   } else {
-                    cell.appendChild(container);
+                    const span = document.createElement('span');
+                    span.className = cls;
+                    span.textContent = text;
+                    cell.appendChild(span);
                   }
 
                   passedData[project].push(successes);
