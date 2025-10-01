@@ -38,7 +38,7 @@
         Object.values(data).forEach(dayEntry => {
           Object.keys(dayEntry).forEach(p => projects.add(p));
         });
-        const projectList = [...projects];
+        const projectList = [...projects].sort();
 
         // Build header
         const header = document.createElement('tr');
