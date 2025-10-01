@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <link rel="icon" type="image/svg+xml" sizes="any"
@@ -8,45 +8,82 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
-            font-family: sans-serif;
+            font-family: 'Inter', sans-serif;
             padding: 20px;
-            background: #f7f9fc;
+            background: linear-gradient(to bottom right, #f0f4f8, #e2e8f0);
+            color: #333;
         }
 
         h1 {
             text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #4f46e5;
         }
 
         table {
             width: 95%;
             margin: 20px auto;
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            background: white;
         }
 
         th, td {
-            padding: 8px 12px;
+            padding: 12px 16px;
             text-align: center;
-            border: 1px solid #ddd;
         }
 
         th {
             background: #4f46e5;
             color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        tr:nth-child(even) td {
+            background: #f7f9fc;
+        }
+
+        tr:hover td {
+            background: #e0e7ff;
+            transition: background 0.3s;
         }
 
         .success {
             background: #16a34a;
             color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: 500;
+            display: inline-block;
         }
 
         .failure {
             background: #dc2626;
             color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-weight: 500;
+            display: inline-block;
         }
 
         canvas {
             display: block;
             margin: 40px auto;
+            max-width: 95%;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+
+        a.success, a.failure {
+            text-decoration: none;
         }
     </style>
 </head>
@@ -66,19 +103,16 @@
         const passedData = {};
         const failedData = {};
 
-        // Collect all project names
         const projects = new Set();
         Object.values(data).forEach(dayEntry => {
           Object.keys(dayEntry).forEach(p => projects.add(p));
         });
         const projectList = [...projects].sort();
 
-        // Build header
         const header = document.createElement('tr');
         header.innerHTML = '<th>Date</th>' + projectList.map(p => `<th>${p}</th>`).join('');
         table.appendChild(header);
 
-        // Prepare last 7 days
         const days = [];
         for (let i = 6; i >= 0; i--) {
           const d = new Date();
@@ -88,7 +122,6 @@
 
         const today = new Date().toISOString().slice(0, 10);
 
-        // Init dataset
         projectList.forEach(p => {
           passedData[p] = [];
           failedData[p] = [];
@@ -97,47 +130,46 @@
         days.reverse();
 
         days.forEach(day => {
-        const row = document.createElement('tr');
-        row.innerHTML = `<td>${day}</td>`;
-        labels.push(day);
+          const row = document.createElement('tr');
+          row.innerHTML = `<td>${day}</td>`;
+          labels.push(day);
 
-        projectList.forEach(project => {
-        const cell = document.createElement('td');
-        const entry = data[day] && data[day][project];
+          projectList.forEach(project => {
+            const cell = document.createElement('td');
+            const entry = data[day] && data[day][project];
 
-        if (entry) {
-          const txt = entry.failures > 0 ? 'Failure' : 'Success';
-          const cls = entry.failures > 0 ? 'failure' : 'success';
+            if (entry) {
+              const txt = entry.failures > 0 ? 'Failure' : 'Success';
+              const cls = entry.failures > 0 ? 'failure' : 'success';
 
-          if (day === today) {
-            const link = document.createElement('a');
-            link.href = entry.path + 'index.html';
-            link.target = '_blank';
-            link.textContent = txt;
-            link.className = cls;
-            cell.appendChild(link);
-          } else {
-            const span = document.createElement('span');
-            span.textContent = txt;
-            span.className = cls;
-            cell.appendChild(span);
-          }
+              if (day === today) {
+                const link = document.createElement('a');
+                link.href = entry.path + 'index.html';
+                link.target = '_blank';
+                link.textContent = txt;
+                link.className = cls;
+                cell.appendChild(link);
+              } else {
+                const span = document.createElement('span');
+                span.textContent = txt;
+                span.className = cls;
+                cell.appendChild(span);
+              }
 
-          passedData[project].push(entry.successes);
-          failedData[project].push(entry.failures);
-        } else {
-          cell.textContent = '-';
-          passedData[project].push(0);
-          failedData[project].push(0);
-        }
+              passedData[project].push(entry.successes);
+              failedData[project].push(entry.failures);
+            } else {
+              cell.textContent = '-';
+              passedData[project].push(0);
+              failedData[project].push(0);
+            }
 
-        row.appendChild(cell);
+            row.appendChild(cell);
+          });
+
+          table.appendChild(row);
         });
 
-        table.appendChild(row);
-        });
-
-        // Build multi-project chart (stacked bar)
         const datasets = [];
         projectList.forEach(project => {
           datasets.push({
@@ -162,7 +194,7 @@
             responsive: true,
             plugins: {
               legend: { display: false },
-              title: { display: true, text: 'Tests Passed vs Failed (Last 7 Days, per project)' }
+              title: { display: true, text: 'Tests Passed vs Failed (Last 7 Days, per project)', font: { size: 18, weight: '600' } }
             },
             scales: { y: { beginAtZero: true, precision:0 } }
           }
