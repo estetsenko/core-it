@@ -2,7 +2,7 @@ name: Run Integration Tests
 
 on:
   schedule:
-    - cron: "*/1 * * * *"  # every minute
+    - cron: "*/5 * * * *"  # every minute
   workflow_dispatch:        # allows manual trigger too
 
 concurrency:
