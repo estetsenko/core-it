@@ -9,7 +9,10 @@ permissions:
   id-token: write
 
 jobs:
+  run-tests:
+    uses: ./.github/workflows/integration-tests.yml
   update-report:
+    needs: run-tests
     runs-on: ubuntu-latest
     environment:
       name: pages
