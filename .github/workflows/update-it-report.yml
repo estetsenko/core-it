@@ -1,37 +1,22 @@
-# .github/workflows/report.yml
 name: Generate Test Report
-
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/2 * * * *"  # Every 2 minutes, UTC
+    - cron: "*/2 * * * *"
 
 permissions:
-  contents: read
   pages: write
   id-token: write
-  workflows: write   # Needed to trigger workflow_dispatch via API
 
 jobs:
-  trigger-tests:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Trigger integration-tests workflow
-        id: trigger
-        run: |
-          echo "Triggering integration-tests workflow..."
-          response=$(curl -s -X POST \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-            https://api.github.com/repos/${{ github.repository }}/actions/workflows/integration-tests.yml/dispatches \
-            -d '{"ref":"main","inputs":{"runReason":"scheduled"}}')
-          echo "Response: $response"
-
+  run-tests:
+    uses: ./.github/workflows/integration-tests.yml
   update-report:
-    needs: trigger-tests
+    needs: run-tests
     runs-on: ubuntu-latest
     environment:
       name: pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -46,7 +31,50 @@ jobs:
         run: |
           today=$(date +%Y-%m-%d)
           mkdir -p report/reports
-          # Aggregate and generate report (same as your original script)
+          successes=0
+          failures=0
+          
+          url="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/history.json"
+          if ! curl -s -f -o report/history.json "$url"; then
+            echo "No history.json found, create a new one"
+            echo "{}" > report/history.json
+          fi
+          
+          for artifact in artifacts/*; do
+            modname=$(basename "$artifact")
+            echo "Processing artifact for $modname"
+            mod_succ=0
+            mod_fail=0
+          
+            for f in "$artifact"/surefire-reports/TEST-*.xml; do
+              [ -f "$f" ] || continue
+              line=$(grep -o '<testsuite[^>]*>' "$f" | head -n1 || true)
+              tests=$(echo "$line" | sed -n 's/.*tests="\([0-9]\+\)".*/\1/p')
+              fails=$(echo "$line" | sed -n 's/.*failures="\([0-9]\+\)".*/\1/p')
+              errs=$(echo "$line" | sed -n 's/.*errors="\([0-9]\+\)".*/\1/p')
+              tests=${tests:-0}; fails=${fails:-0}; errs=${errs:-0}
+              mod_succ=$((mod_succ + tests - fails - errs))
+              mod_fail=$((mod_fail + fails + errs))
+            done
+          
+            successes=$((successes + mod_succ))
+            failures=$((failures + mod_fail))
+          
+            if [ -f "$artifact/reports/surefire.html" ]; then
+              mkdir -p report/reports/$modname
+              cp -r "$artifact/reports/"* report/reports/$modname/
+              mv "report/reports/$modname/surefire.html" "report/reports/$modname/index.html" 
+            fi
+          
+            jq --arg date "$today" \
+               --arg proj "$modname" \
+               --arg succ "$mod_succ" \
+               --arg fail "$mod_fail" \
+               --arg p "reports/$modname/" \
+               '.[$date][$proj] = {successes: ($succ|tonumber), failures: ($fail|tonumber), path: $p}' \
+               report/history.json > report/tmp.json && mv report/tmp.json report/history.json
+          done
+          
           cp report-template.html report/index.html
 
       - name: Setup Pages
