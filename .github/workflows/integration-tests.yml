@@ -1,8 +1,9 @@
-name: Run integration tests
+name: Run Integration Tests
 
 on:
   schedule:
-    - cron: "*/1 * * * *"
+    - cron: "*/1 * * * *"  # every minute
+  workflow_dispatch:        # allows manual trigger too
 
 concurrency:
   group: "integration-tests"
@@ -30,7 +31,6 @@ jobs:
         run: |
           for module in $(find . -type d -path "*/target/surefire-reports" | sed -E 's#/target/surefire-reports##' | sort -u); do
             modname=$(basename "$module")
-            echo "Found test reports for $modname ($module)"
             mkdir -p artifacts/$modname
             cp -r "$module/target/surefire-reports" artifacts/$modname/ || true
             if [ -d "$module/target/reports" ]; then
