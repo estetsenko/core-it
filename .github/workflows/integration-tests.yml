@@ -2,6 +2,7 @@ name: Run integration tests
 
 on:
   workflow_call:
+  workflow_dispatch:
   push:
     branches: [main]
   pull_request:
