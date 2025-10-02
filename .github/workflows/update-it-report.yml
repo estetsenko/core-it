@@ -2,7 +2,7 @@ name: Generate Test Report
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/30 * * * *"
+    - cron: "0 0 * * *"
 
 permissions:
   pages: write
@@ -75,7 +75,7 @@ jobs:
                report/history.json > report/tmp.json && mv report/tmp.json report/history.json
           done
           
-          cutoff=$(date -d "7 days ago" +%Y-%m-%d)
+          cutoff=$(date -d "1 days ago" +%Y-%m-%d)
           jq --arg cutoff "$cutoff" 'with_entries(select(.key >= $cutoff))' \
           report/history.json > report/tmp.json && mv report/tmp.json report/history.json
           
