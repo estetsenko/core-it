@@ -76,7 +76,7 @@ jobs:
           done
           
           cutoff=$(date -d "1 days ago" +%Y-%m-%d)
-          jq --arg cutoff "$cutoff" 'with_entries(select(.key >= $cutoff))' \
+          jq --arg cutoff "$cutoff" 'with_entries(select(.key > $cutoff))' \
           report/history.json > report/tmp.json && mv report/tmp.json report/history.json
           
           cp report-template.html report/index.html
